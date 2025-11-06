@@ -1,0 +1,168 @@
+{
+  "Cơm trắng": {
+    "Giá": 10000,
+    "Calo": 200,
+    "Loại": "Món chính",
+    "HealthyScore": 7,
+    "Đặc điểm": [
+      "Nguồn năng lượng chính",
+      "Dễ tiêu hóa",
+      "Giàu carbohydrate"
+    ]
+  },
+  "Thịt Kho Trứng": {
+    "Giá": 30000,
+    "Calo": 300,
+    "Loại": "Món mặn",
+    "HealthyScore": 6,
+    "Đặc điểm": [
+      "Giàu protein",
+      "Có trứng và thịt",
+      "Đậm đà"
+    ]
+  },
+  "Thịt kho": {
+    "Giá": 25000,
+    "Calo": 250,
+    "Loại": "Món mặn",
+    "HealthyScore": 6,
+    "Đặc điểm": [
+      "Giàu protein",
+      "Thịt heo kho",
+      "Vị ngọt mặn"
+    ]
+  },
+  "Sườn nướng": {
+    "Giá": 30000,
+    "Calo": 300,
+    "Loại": "Món mặn",
+    "HealthyScore": 5,
+    "Đặc điểm": ["Giàu protein", "Nướng thơm", "Hàm lượng mỡ cao"]
+  },
+  "Sường nướng": {
+    "Giá": 30000,
+    "Calo": 300,
+    "Loại": "Món mặn",
+    "HealthyScore": 5,
+    "Đặc điểm": ["Giàu protein", "Nướng thơm", "Hàm lượng mỡ cao"]
+  },
+  "Cá hú kho": {
+    "Giá": 30000,
+    "Calo": 150,
+    "Loại": "Món mặn",
+    "HealthyScore": 8,
+    "Đặc điểm": [
+      "Giàu Omega-3",
+      "Protein từ cá",
+      "Tốt cho tim mạch"
+    ]
+  },
+  "Trứng chiên": {
+    "Giá": 25000,
+    "Calo": 150,
+    "Loại": "Món mặn",
+    "HealthyScore": 7,
+    "Đặc điểm": [
+      "Giàu protein",
+      "Nhiều vitamin",
+      "Dễ chế biến"
+    ]
+  },
+  "Rau củ sắn xào": {
+    "Giá": 10000,
+    "Calo": 100,
+    "Loại": "Rau xào",
+    "HealthyScore": 9,
+    "Đặc điểm": [
+      "Giàu chất xơ",
+      "Nhiều vitamin",
+      "Ít calo"
+    ]
+  },
+  "Rau đậu que xào": {
+    "Giá": 10000,
+    "Calo": 80,
+    "Loại": "Rau xào",
+    "HealthyScore": 9,
+    "Đặc điểm": [
+      "Giàu chất xơ",
+      "Vitamin A, C",
+      "Ít calo"
+    ]
+  },
+  "Rau đậu đũa xào": {
+    "Giá": 10000,
+    "Calo": 90,
+    "Loại": "Rau xào",
+    "HealthyScore": 9,
+    "Đặc điểm": [
+      "Giàu chất xơ",
+      "Nhiều khoáng chất",
+      "Ít calo"
+    ]
+  },
+  "Canh rau cải": {
+    "Giá": 7000,
+    "Calo": 50,
+    "Loại": "Canh",
+    "HealthyScore": 10,
+    "Đặc điểm": [
+      "Rất ít calo",
+      "Giàu vitamin K",
+      "Giúp tiêu hóa"
+    ]
+  },
+  "Canh rau muống": {
+    "Giá": 7000,
+    "Calo": 40,
+    "Loại": "Canh",
+    "HealthyScore": 10,
+    "Đặc điểm": [
+      "Rất ít calo",
+      "Giàu sắt",
+      "Mát gan"
+    ]
+  },
+  "Canh chua có cá": {
+    "Giá": 25000,
+    "Calo": 80,
+    "Loại": "Canh",
+    "HealthyScore": 9,
+    "Đặc điểm": [
+      "Giàu protein từ cá",
+      "Chua thanh",
+      "Kích thích vị giác"
+    ]
+  },
+  "Canh chua không cá": {
+    "Giá": 10000,
+    "Calo": 70,
+    "Loại": "Canh",
+    "HealthyScore": 8,
+    "Đặc điểm": [
+      "Ít calo",
+      "Chua thanh",
+      "Nhiều rau củ"
+    ]
+  },
+  "Đậu hũ sốt cà": {
+    "Giá": 25000,
+    "Calo": 100,
+    "Loại": "Món mặn",
+    "HealthyScore": 8,
+    "Đặc điểm": [
+      "Giàu protein thực vật",
+      "Ít mỡ",
+      "Phù hợp ăn chay"
+    ]
+  },
+  "Không có món ăn nào cả": {
+    "Giá": 0,
+    "Calo": 0,
+    "Loại": "Không có",
+    "HealthyScore": 0,
+    "Đặc điểm": [
+      "Không phát hiện món ăn"
+    ]
+  }
+}
