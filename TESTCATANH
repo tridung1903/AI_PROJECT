@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tọa Độ Cắt Ảnh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .upload-area {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .original-container, .segments-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .section-title {
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        #originalCanvas {
+            max-width: 100%;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+        }
+        .segments-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .segment-item {
+            text-align: center;
+        }
+        .segment-canvas {
+            width: 100%;
+            border: 2px solid #28a745;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .segment-info {
+            font-size: 12px;
+            color: #666;
+        }
+        .coordinates {
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="upload-area">
+            <h2>Test Tọa Độ Cắt Ảnh</h2>
+            <input type="file" id="imageInput" accept="image/*">
+            <button class="btn" onclick="processImage()">Cắt Ảnh Theo Tọa Độ</button>
+        </div>
+
+        <div class="results">
+            <div class="original-container">
+                <h3 class="section-title">Ảnh Gốc với Bounding Boxes</h3>
+                <canvas id="originalCanvas"></canvas>
+                <div class="coordinates">
+                    <h4>Tọa độ các vùng:</h4>
+                    <div id="coordinatesInfo"></div>
+                </div>
+            </div>
+
+            <div class="segments-container">
+                <h3 class="section-title">5 Vùng Đã Cắt</h3>
+                <div class="segments-grid" id="segmentsGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getFiveCompartmentBoxes(width, height, paddingRatio = 0.02) {
+            const grid = [
+                { x1r: 0.09, y1r: 0.14, x2r: 0.28, y2r: 0.39 }, // Slot 1
+                { x1r: 0.32, y1r: 0.14, x2r: 0.51, y2r: 0.39 }, // Slot 2
+                { x1r: 0.58, y1r: 0.14, x2r: 0.77, y2r: 0.39 }, // Slot 3
+                { x1r: 0.09, y1r: 0.46, x2r: 0.36, y2r: 0.88 }, // Slot 4
+                { x1r: 0.41, y1r: 0.46, x2r: 0.76, y2r: 0.88 }  // Slot 5
+            ];
+
+            const boxes = [];
+            const px = paddingRatio * width;
+            const py = paddingRatio * height;
+
+            grid.forEach((coords, index) => {
+                const x1 = Math.max(0, Math.floor(coords.x1r * width + px));
+                const y1 = Math.max(0, Math.floor(coords.y1r * height + py));
+                const x2 = Math.min(width - 1, Math.floor(coords.x2r * width - px));
+                const y2 = Math.min(height - 1, Math.floor(coords.y2r * height - py));
+
+                boxes.push({
+                    slot: index + 1,
+                    x1: x1,
+                    y1: y1,
+                    x2: x2,
+                    x2: x2,
+                    y2: y2,
+                    width: x2 - x1,
+                    height: y2 - y1
+                });
+            });
+
+            return boxes;
+        }
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function drawBoundingBox(ctx, box, position) {
+            const { x1, y1, x2, y2 } = box;
+            const width = x2 - x1;
+            const height = y2 - y1;
+
+            // Màu sắc cho bounding box
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'];
+            const color = colors[(position - 1) % colors.length];
+
+            // Vẽ bounding box
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x1, y1, width, height);
+
+            // Vẽ số thứ tự
+            ctx.fillStyle = color;
+            ctx.fillRect(x1, y1, 30, 30);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(position.toString(), x1 + 15, y1 + 15);
+        }
+
+        function processImage() {
+            const fileInput = document.getElementById('imageInput');
+            if (!fileInput.files[0]) {
+                alert('Vui lòng chọn ảnh trước!');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Lấy tọa độ cắt
+                    const boxes = getFiveCompartmentBoxes(img.width, img.height);
+                    
+                    // Hiển thị tọa độ
+                    displayCoordinates(boxes, img.width, img.height);
+                    
+                    // Vẽ ảnh gốc với bounding boxes
+                    drawOriginalImageWithBoxes(img, boxes);
+                    
+                    // Cắt và hiển thị các vùng
+                    cropAndDisplaySegments(img, boxes);
+                };
+                img.src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function displayCoordinates(boxes, imgWidth, imgHeight) {
+            const coordinatesInfo = document.getElementById('coordinatesInfo');
+            let html = `<div>Kích thước ảnh: ${imgWidth} x ${imgHeight}</div>`;
+            
+            boxes.forEach(box => {
+                html += `
+                    <div style="margin-top: 5px;">
+                        <strong>Vùng ${box.slot}:</strong> 
+                        (${box.x1}, ${box.y1}) - (${box.x2}, ${box.y2}) 
+                        [${box.width} x ${box.height}]
+                    </div>
+                `;
+            });
+            
+            coordinatesInfo.innerHTML = html;
+        }
+
+        function drawOriginalImageWithBoxes(img, boxes) {
+            const canvas = document.getElementById('originalCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Đặt kích thước canvas bằng kích thước ảnh
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // Vẽ ảnh gốc
+            ctx.drawImage(img, 0, 0);
+
+            // Vẽ bounding boxes
+            boxes.forEach(box => {
+                drawBoundingBox(ctx, box, box.slot);
+            });
+
+            // Scale canvas để hiển thị vừa màn hình
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+        }
+
+        function cropAndDisplaySegments(img, boxes) {
+            const segmentsGrid = document.getElementById('segmentsGrid');
+            segmentsGrid.innerHTML = '';
+
+            boxes.forEach(box => {
+                // Tạo canvas cho từng vùng cắt
+                const segmentCanvas = document.createElement('canvas');
+                segmentCanvas.width = box.width;
+                segmentCanvas.height = box.height;
+                segmentCanvas.className = 'segment-canvas';
+
+                const ctx = segmentCanvas.getContext('2d');
+                
+                // Cắt ảnh
+                ctx.drawImage(
+                    img,
+                    box.x1, box.y1, box.width, box.height, // Source: vùng cắt từ ảnh gốc
+                    0, 0, box.width, box.height            // Destination: toàn bộ canvas
+                );
+
+                // Tạo container cho segment
+                const segmentItem = document.createElement('div');
+                segmentItem.className = 'segment-item';
+                
+                segmentItem.innerHTML = `
+                    <canvas class="segment-canvas"></canvas>
+                    <div class="segment-info">
+                        Vùng ${box.slot}<br>
+                        ${box.width} x ${box.height}
+                    </div>
+                `;
+
+                // Thay thế canvas placeholder bằng canvas thật
+                const placeholderCanvas = segmentItem.querySelector('.segment-canvas');
+                placeholderCanvas.width = box.width;
+                placeholderCanvas.height = box.height;
+                const placeholderCtx = placeholderCanvas.getContext('2d');
+                placeholderCtx.drawImage(
+                    img,
+                    box.x1, box.y1, box.width, box.height,
+                    0, 0, box.width, box.height
+                );
+
+                segmentsGrid.appendChild(segmentItem);
+            });
+        }
+
+        // Cho phép kéo thả ảnh
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('imageInput');
+            
+            // Cho phép kéo thả
+            document.body.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            document.body.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('image/')) {
+                    fileInput.files = files;
+                    processImage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
