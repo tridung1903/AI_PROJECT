@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodScan Restaurant - Nhà hàng thông minh</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #4CAF50;
+      --primary-dark: #388E3C;
+      --primary-light: #C8E6C9;
+      --secondary: #8D6E63;
+      --secondary-light: #D7CCC8;
+      --accent: #FF9800;
+      --text-dark: #333333;
+      --text-light: #757575;
+      --background: #F5F5F5;
+      --white: #FFFFFF;
+      --success: #4CAF50;
+      --warning: #FFC107;
+      --error: #F44336;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--background);
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+
+    /* === HEADER === */
+    .app-header {
+      background: var(--white);
+      padding: 15px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo-icon {
+      font-size: 2.5em;
+    }
+
+    .logo-text h1 {
+      font-size: 1.5em;
+      color: var(--primary-dark);
+      margin-bottom: 5px;
+    }
+
+    .logo-text p {
+      font-size: 0.9em;
+      color: var(--text-light);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-weight: 600;
+      font-size: 1.2em;
+    }
+
+    .points-badge {
+      background: linear-gradient(135deg, var(--accent) 0%, #FFB74D 100%);
+      color: var(--text-dark);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 1em;
+      box-shadow: 0 2px 8px rgba(255, 167, 38, 0.3);
+    }
+
+    .btn-logout {
+      padding: 8px 20px;
+      background: var(--error);
+      color: var(--white);
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+    }
+
+    /* === NAVIGATION === */
+    .nav-tabs {
+      display: flex;
+      background: var(--white);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      overflow-x: auto;
+      border-bottom: 1px solid var(--secondary-light);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 15px 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      color: var(--text-light);
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      color: var(--primary-dark);
+      border-bottom-color: var(--primary-dark);
+      background-color: var(--primary-light);
+    }
+
+    .tab-btn:hover:not(.active) {
+      background-color: rgba(0,0,0,0.03);
+    }
+
+    /* === MAIN CONTENT === */
+    .tab-content {
+      display: none;
+      padding: 30px 0;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .section-title {
+      font-size: 1.5em;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* === SCAN PAGE === */
+    .scan-area {
+      background: var(--white);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .camera-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto 20px;
+      background: #f5f5f5;
+      border-radius: 15px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      border: 2px dashed var(--primary-light);
+    }
+
+    #preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .camera-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--secondary-light);
+      color: var(--text-dark);
+    }
+
+    .btn-secondary:hover {
+      background: var(--secondary);
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .image-controls {
+      margin-top: 15px;
+      padding: 15px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      display: none;
+    }
+
+    .image-controls h4 {
+      margin-bottom: 15px;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .control-item label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-item input[type="range"] {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: #e0e0e0;
+      outline: none;
+    }
+
+    .control-item input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .results-area {
+      margin-top: 30px;
+    }
+
+    .food-item {
+      background: var(--white);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--primary);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .food-item h3 {
+      color: var(--primary-dark);
+      margin-bottom: 5px;
+    }
+
+    .food-price {
+      font-weight: 600;
+      color: var(--success);
+      font-size: 1.1em;
+    }
+
+    .total-summary {
+      margin-top: 20px;
+      padding: 25px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: 15px;
+      color: var(--white);
+      box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.2em;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    /* === MENU PAGE === */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .menu-card {
+      background: var(--white);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+
+    .menu-card-img {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .menu-card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .menu-card-body {
+      padding: 20px;
+    }
+
+    .menu-card-title {
+      font-size: 1.2em;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .menu-card-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-light);
+      font-size: 0.95em;
+      margin-top: 10px;
+    }
+
+    .menu-price {
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 1.1em;
+    }
+
+    /* === REWARDS PAGE === */
+    .rewards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .reward-card {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .reward-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+
+    .reward-icon {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      overflow: hidden;
+      font-size: 3em;
+    }
+
+    .reward-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .reward-title {
+      font-size: 1.3em;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .reward-points {
+      font-size: 1.8em;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 15px;
+    }
+
+    .btn-redeem {
+      width: 100%;
+      padding: 12px;
+      background: var(--success);
+      color: var(--white);
+      border: none;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-redeem:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-redeem:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* === ABOUT/CONTACT PAGE === */
+    .about-section {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 30px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .video-container iframe {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: none;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .contact-item {
+      background: var(--primary-light);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      border-left: 4px solid var(--primary);
+    }
+
+    .contact-icon {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .contact-label {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 5px;
+    }
+
+    .contact-value {
+      color: var(--text-dark);
+      font-size: 1.1em;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .social-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+      color: var(--white);
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .social-btn.facebook { background: #1877f2; }
+    .social-btn.instagram { background: #e4405f; }
+    .social-btn.zalo { background: #0068ff; }
+
+    .social-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    /* === HISTORY === */
+    .history-list {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .history-item {
+      padding: 15px;
+      border-bottom: 1px solid var(--secondary-light);
+      border-left: 4px solid var(--primary);
+      margin-bottom: 10px;
+      background: var(--primary-light);
+      border-radius: 5px;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-date {
+      color: var(--text-light);
+      font-size: 0.9em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* === LOGIN PAGE === */
+    .login-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--white);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 400px;
+      animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-logo .logo-icon {
+      font-size: 4em;
+      margin-bottom: 10px;
+    }
+
+    .login-logo h1 {
+      color: var(--primary-dark);
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .login-logo p {
+      color: var(--text-light);
+      font-size: 0.9em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid var(--secondary-light);
+      border-radius: 10px;
+      font-size: 1em;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--primary);
+      font-size: 1.2em;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .nav-tabs {
+        overflow-x: auto;
+      }
+      
+      .tab-btn {
+        font-size: 0.9em;
+        padding: 12px 15px;
+      }
+      
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .control-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon">🍽️</div>
+        <h1>FoodScan Restaurant</h1>
+        <p>Nhà hàng thông minh - Tích điểm mỗi bữa ăn</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Tên đăng nhập</label>
+          <input type="text" id="username" placeholder="Nhập tên của bạn" required>
+        </div>
+        <div class="form-group">
+          <label>Email (tùy chọn)</label>
+          <input type="email" id="email" placeholder="email@example.com">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Đăng nhập</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="hidden">
+    <!-- Header -->
+    <div class="app-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <div class="logo-icon">🍽️</div>
+            <div class="logo-text">
+              <h1>FoodScan Restaurant</h1>
+              <p>Nhà hàng thông minh - Tích điểm thưởng hấp dẫn</p>
+            </div>
+          </div>
+          <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div>
+              <div style="font-weight: 600;" id="displayName">User</div>
+              <div style="font-size: 0.9em; color: var(--text-light);">Thành viên</div>
+            </div>
+            <div class="points-badge">⭐ <span id="userPoints">0</span> điểm</div>
+            <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('scan')">📸 Quét món ăn</button>
+      <button class="tab-btn" onclick="switchTab('menu')">📋 Thực đơn</button>
+      <button class="tab-btn" onclick="switchTab('rewards')">🎁 Đổi thưởng</button>
+      <button class="tab-btn" onclick="switchTab('history')">📊 Lịch sử</button>
+      <button class="tab-btn" onclick="switchTab('about')">ℹ️ Về chúng tôi</button>
+    </div>
+
+    <div class="container">
+      <!-- SCAN TAB -->
+      <div id="scanTab" class="tab-content active">
+        <div class="scan-area">
+          <h2 class="section-title">📸 Quét Khay Ăn Của Bạn</h2>
+          <div class="camera-container">
+            <img id="preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='450'%3E%3Crect width='600' height='450' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='24'%3EChụp ảnh khay ăn%3C/text%3E%3C/svg%3E" alt="Preview">
+          </div>
+          
+          <!-- Camera Controls -->
+          <div class="camera-controls">
+            <button class="btn btn-primary" onclick="startCamera()">🎥 Bật camera</button>
+            <button class="btn btn-primary" onclick="capturePhoto()">📸 Chụp ảnh</button>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+            <button class="btn btn-secondary" onclick="document.getElementById('imageInput').click()">📁 Tải ảnh</button>
+            <button class="btn btn-primary" onclick="analyzeImage()" id="analyzeBtn" style="background: var(--success);" disabled>✨ Phân tích</button>
+          </div>
+
+          <!-- Image Controls -->
+          <div class="image-controls" id="imageControls">
+            <h4>🎨 Chỉnh sửa ảnh</h4>
+            <div class="control-grid">
+              <div class="control-item">
+                <label>🔆 Độ sáng: <span id="brightnessValue">0</span>%</label>
+                <input type="range" id="brightnessSlider" min="-100" max="100" value="0" oninput="adjustBrightness(this.value)">
+              </div>
+              <div class="control-item">
+                <label>⚡ Độ tương phản: <span id="contrastValue">0</span>%</label>
+                <input type="range" id="contrastSlider" min="-100" max="100" value="0" oninput="adjustContrast(this.value)">
+              </div>
+            </div>
+            <div class="control-buttons">
+              <button class="btn btn-primary" onclick="applyAdjustments()" style="background: var(--success);">✅ Áp dụng</button>
+              <button class="btn btn-secondary" onclick="resetAdjustments()">🔄 Reset</button>
+              <button class="btn btn-secondary" onclick="showOriginalImage()">👁️ Xem gốc</button>
+            </div>
+          </div>
+
+          <div id="loadingArea" class="loading hidden">Đang phân tích...</div>
+          <div id="resultsArea" class="results-area hidden">
+            <!-- Results will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU TAB -->
+      <div id="menuTab" class="tab-content">
+        <h2 class="section-title">📋 Thực đơn nhà hàng</h2>
+        <div class="menu-grid" id="menuGrid"></div>
+      </div>
+
+      <!-- REWARDS TAB -->
+      <div id="rewardsTab" class="tab-content">
+        <h2 class="section-title">🎁 Đổi quà tặng</h2>
+        <div class="rewards-grid" id="rewardsGrid"></div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="historyTab" class="tab-content">
+        <h2 class="section-title">📊 Lịch sử giao dịch</h2>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <!-- ABOUT/CONTACT TAB -->
+      <div id="aboutTab" class="tab-content">
+        <div class="about-section">
+          <h2 class="section-title">ℹ️ Giới thiệu về nhà hàng</h2>
+          
+          <!-- Video Introduction -->
+          <div class="video-container">
+            <iframe 
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+              title="Video giới thiệu nhà hàng"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+            </iframe>
+          </div>
+          
+          <p style="line-height: 1.8; color: var(--text-dark); margin-bottom: 30px;">
+            Chào mừng bạn đến với <strong>FoodScan Restaurant</strong> - nhà hàng tiên phong ứng dụng công nghệ AI 
+            trong việc nhận diện món ăn và tích điểm thưởng tự động. Với hệ thống quét khay thông minh, 
+            mỗi bữa ăn của bạn đều được ghi nhận và quy đổi thành điểm thưởng hấp dẫn.
+          </p>
+          
+          <h3 class="section-title">📞 Thông tin liên hệ</h3>
+          <div class="contact-grid">
+            <div class="contact-item">
+              <div class="contact-icon">📍</div>
+              <div class="contact-label">Địa chỉ</div>
+              <div class="contact-value">123 Nguyễn Huệ, Q1, TP.HCM</div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">📞</div>
+              <div class="contact-label">Điện thoại</div>
+              <div class="contact-value">028 1234 5678</div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">✉️</div>
+              <div class="contact-label">Email</div>
+              <div class="contact-value">info@foodscan.vn</div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">🕐</div>
+              <div class="contact-label">Giờ mở cửa</div>
+              <div class="contact-value">6:00 - 22:00 (Hàng ngày)</div>
+            </div>
+          </div>
+          
+          <h3 class="section-title" style="margin-top: 30px;">🌐 Kết nối với chúng tôi</h3>
+          <div class="social-links">
+            <a href="#" class="social-btn facebook" title="Facebook">📘</a>
+            <a href="#" class="social-btn instagram" title="Instagram">📷</a>
+            <a href="#" class="social-btn zalo" title="Zalo">💬</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript code remains the same as in the original
+    // Only the CSS has been updated for a more professional layout
+    let cameraActive = false;
+    let videoStream = null;
+    let currentUser = null;
+    let currentImage = null;
+    const API_URL = 'http://localhost:5000/api';
+
+    // Menu data
+    const MENU_DATA = {
+      'Canh chua có cá': { image: 'images/canh_chua_ca.png', price: 25000, calories: 80 },
+      'Canh chua không cá': { image: 'images/canh_chua.png', price: 10000, calories: 70 },
+      'Canh rau cải': { image: 'images/canh_rau_cai.png', price: 7000, calories: 50 },
+      'Canh rau muống': { image: 'images/canh_rau_muong.png', price: 7000, calories: 40 },
+      'Cá hú kho': { image: 'images/ca_hu_kho.png', price: 30000, calories: 150 },
+      'Cơm trắng': { image: 'images/com.png', price: 10000, calories: 200 },
+      'Củ sắn xào': { image: 'images/cu_san_xao.png', price: 10000, calories: 100 },
+      'Khay trống': { image: 'images/khay_trong.png', price: 0, calories: 0 },
+      'Lagim xào': { image: 'images/lagim_xao.png', price: 10000, calories: 120 },
+      'Sườn nướng': { image: 'images/suon_nuong.png', price: 30000, calories: 300 },
+      'Thịt kho': { image: 'images/thit_kho.png', price: 25000, calories: 250 },
+      'Thịt kho 1 trứng': { image: 'images/thit_kho_1_trung.png', price: 30000, calories: 300 },
+      'Thịt kho 2 trứng': { image: 'images/thit_kho_2_trung.png', price: 36000, calories: 350 },
+      'Trứng chiên': { image: 'images/trung_chien.png', price: 25000, calories: 150 },
+      'Đậu hủ sốt cà': { image: 'images/dau_hu_sot_ca.png', price: 25000, calories: 100 },
+      'Đậu que xào': { image: 'images/dau_que_xao.png', price: 10000, calories: 80 },
+      'Đậu đũa xào': { image: 'images/dau_dua_xao.png', price: 10000, calories: 90 }
+    };
+
+    const REWARDS_DATA = {
+      1: { name: 'Giảm 10%', points: 50, image: 'images/reward_10.png' },
+      2: { name: 'Nước ngọt', points: 30, image: 'images/reward_drink.png' },
+      3: { name: 'Trà sữa', points: 80, image: 'images/reward_tea.png' },
+      4: { name: 'Giảm 20%', points: 100, image: 'images/reward_20.png' },
+      5: { name: 'Combo Set', points: 150, image: 'images/reward_combo.png' },
+      6: { name: 'Buffet', points: 300, image: 'images/reward_buffet.png' }
+    };
+
+    // Login handling
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      if (username) {
+        currentUser = {
+          id: username.toLowerCase().replace(/\s+/g, '_'),
+          name: username,
+          points: 0
+        };
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        document.getElementById('displayName').textContent = username;
+        document.getElementById('userAvatar').textContent = username[0].toUpperCase();
+        await loadUserPoints();
+        loadMenu();
+        loadRewards();
+      }
+    });
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('mainApp').classList.add('hidden');
+      document.getElementById('loginForm').reset();
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName + 'Tab').classList.add('active');
+      
+      if (tabName === 'history') {
+        loadHistory();
+      }
+    }
+
+    // Camera functions
+    async function startCamera() {
+      const container = document.querySelector('.camera-container');
+
+      if (cameraActive && videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        cameraActive = false;
+
+        container.innerHTML = `
+          <img id="preview"
+               src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='450'%3E
+               %3Crect width='600' height='450' fill='%23f5f5f5'/%3E
+               %3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='24'%3E
+               Chụp ảnh khay ăn%3C/text%3E%3C/svg%3E"
+               alt="Preview"
+               style="width:100%;height:100%;object-fit:cover;">
+        `;
+        document.querySelector(".camera-controls button[onclick='startCamera()']").textContent = "🎥 Bật camera";
+        return;
+      }
+
+      container.innerHTML = `
+        <video id="cameraStream" autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+        <canvas id="cameraCanvas" class="hidden"></canvas>
+      `;
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('cameraStream').srcObject = videoStream;
+        cameraActive = true;
+        document.querySelector(".camera-controls button[onclick='startCamera()']").textContent = "⛔ Tắt camera";
+      } catch (err) {
+        alert('Không thể bật camera: ' + err.message);
+      }
+    }
+
+    async function capturePhoto() {
+        const video = document.getElementById("cameraStream");
+        const canvas = document.getElementById("cameraCanvas");
+
+        if (!video || !canvas) {
+            alert("⚠️ Vui lòng bật camera trước khi chụp!");
+            return;
+        }
+
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+        if (width === 0 || height === 0) {
+            alert("⚠️ Camera chưa sẵn sàng! Thử lại sau 1 giây.");
+            return;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, width, height);
+
+        const imageData = canvas.toDataURL("image/jpeg");
+        currentImage = imageData;
+
+        videoStream.getTracks().forEach(track => track.stop());
+        cameraActive = false;
+
+        const container = document.querySelector('.camera-container');
+        container.innerHTML = `
+            <img id="preview" src="${imageData}" style="width:100%;height:100%;object-fit:cover;">
+        `;
+
+        document.querySelector(".camera-controls button[onclick='startCamera()']").textContent = "🎥 Bật camera";
+        document.getElementById("analyzeBtn").disabled = false;
+
+        document.getElementById('imageControls').style.display = 'block';
+
+        alert("📷 Đã chụp ảnh thành công!");
+    }
+
+    // Image handling
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const targetWidth = 800;
+                const targetHeight = 600;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+
+                const scale = Math.min(targetWidth / img.width, targetHeight / img.height);
+                const x = (targetWidth - img.width * scale) / 2;
+                const y = (targetHeight - img.height * scale) / 2;
+
+                ctx.fillStyle = "#f5f5f5";
+                ctx.fillRect(0, 0, targetWidth, targetHeight);
+                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+                currentImage = canvas.toDataURL('image/jpeg', 0.9);
+
+                const preview = document.getElementById('preview');
+                preview.src = currentImage;
+                document.getElementById('analyzeBtn').disabled = false;
+
+                document.getElementById('imageControls').style.display = 'block';
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    async function analyzeImage() {
+      if (!currentImage || !currentUser) return;
+      
+      document.getElementById('loadingArea').classList.remove('hidden');
+      document.getElementById('resultsArea').classList.add('hidden');
+      
+      try {
+        const response = await fetch(`${API_URL}/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: currentImage,
+            user_id: currentUser.id
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          displayResults(data);
+          currentUser.points = data.total_points;
+          document.getElementById('userPoints').textContent = currentUser.points;
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Không thể kết nối đến server');
+      }
+      
+      document.getElementById('loadingArea').classList.add('hidden');
+    }
+
+    function displayResults(data) {
+        document.getElementById('resultsArea').innerHTML = `
+            <h3 class="section-title">🖼️ Hình ảnh với các vùng đã cắt</h3>
+            <div id="originalImageContainer" style="margin-bottom: 30px; text-align: center;"></div>
+            
+            <h3 class="section-title">🍽️ 5 vùng đã cắt từ khay</h3>
+            <div id="segmentsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;"></div>
+            
+            <h3 class="section-title">📊 Kết quả phân tích</h3>
+            <div id="foodsList"></div>
+            <div class="total-summary">
+                <div class="total-row">
+                    <span>Tổng tiền:</span>
+                    <span id="totalPrice">0đ</span>
+                </div>
+                <div class="total-row" style="font-size: 1em;">
+                    <span>Tổng calo:</span>
+                    <span id="totalCalories">0 cal</span>
+                </div>
+                <div class="total-row" style="color: var(--accent);">
+                    <span>Điểm tích lũy:</span>
+                    <span id="pointsEarned">+0 điểm</span>
+                </div>
+            </div>
+            <div id="nutritionAnalysis" style="margin-top: 20px; padding: 20px; background: var(--white); border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);"></div>
+        `;
+
+        // Hiển thị ảnh gốc với bounding boxes
+        displayOriginalImageWithBoxes(data);
+        
+        // Hiển thị các segments riêng lẻ
+        displaySegments(data);
+        
+        const foodsList = document.getElementById('foodsList');
+        const detectedFoods = data.foods.filter(food => 
+            food.name !== 'Không có món ăn nào cả' && 
+            !food.name.toLowerCase().includes('không có')
+        );
+        
+        if (detectedFoods.length === 0) {
+            foodsList.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-light); background: var(--primary-light); border-radius: 10px;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">🍽️</div>
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">Không phát hiện món ăn nào</div>
+                    <div>Hãy thử chụp lại ảnh khay ăn với ánh sáng tốt hơn</div>
+                </div>
+            `;
+        } else {
+            detectedFoods.forEach(food => {
+                const item = document.createElement('div');
+                item.className = 'food-item';
+                item.innerHTML = `
+                    <div>
+                        <h3>${food.name}</h3>
+                        <div style="color: var(--text-light); font-size: 0.9em;">Ô ${food.position} - ${(food.confidence * 100).toFixed(1)}% tin cậy</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="food-price">${food.price.toLocaleString()}đ</div>
+                        <div style="color: var(--text-light); font-size: 0.9em;">${food.calories} cal</div>
+                    </div>
+                `;
+                foodsList.appendChild(item);
+            });
+        }
+        
+        // Tính tổng chỉ từ các món ăn thực sự được phát hiện
+        const totalPrice = detectedFoods.reduce((sum, food) => sum + food.price, 0);
+        const totalCalories = detectedFoods.reduce((sum, food) => sum + food.calories, 0);
+        const pointsEarned = Math.floor(totalPrice / 10000);
+        
+        document.getElementById('totalPrice').textContent = totalPrice.toLocaleString() + 'đ';
+        document.getElementById('totalCalories').textContent = totalCalories + ' cal';
+        document.getElementById('pointsEarned').textContent = '+' + pointsEarned + ' điểm';
+        
+        displayNutritionAnalysis(totalCalories, detectedFoods);
+        
+        document.getElementById('resultsArea').classList.remove('hidden');
+    }
+
+    function displayOriginalImageWithBoxes(data) {
+        const container = document.getElementById('originalImageContainer');
+        
+        // Tạo canvas để vẽ bounding boxes
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Tạo hình ảnh từ base64
+        const img = new Image();
+        img.onload = function() {
+            // Đặt kích thước canvas bằng kích thước ảnh (nhưng scale xuống để hiển thị)
+            const maxWidth = 600;
+            const scale = maxWidth / img.width;
+            canvas.width = maxWidth;
+            canvas.height = img.height * scale;
+            
+            // Vẽ ảnh gốc đã scale
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Vẽ bounding boxes cho từng segment
+            if (data.segments && data.segments.length > 0) {
+                data.segments.forEach((segment, index) => {
+                    if (segment.box) {
+                        drawBoundingBox(ctx, segment.box, index + 1, segment.prediction.name, scale);
+                    }
+                });
+            }
+            
+            // Hiển thị canvas
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+            canvas.style.border = '2px solid var(--primary)';
+            canvas.style.borderRadius = '10px';
+            canvas.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        };
+        
+        img.src = currentImage;
+        container.appendChild(canvas);
+    }
+
+    function drawBoundingBox(ctx, box, position, foodName, scale) {
+        const [x1, y1, x2, y2] = box.map(coord => coord * scale);
+        const width = x2 - x1;
+        const height = y2 - y1;
+        
+        // Màu sắc cho bounding box (màu khác nhau cho mỗi vị trí)
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'];
+        const color = colors[(position - 1) % colors.length];
+        
+        // Vẽ bounding box
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x1, y1, width, height);
+        
+        // Vẽ background cho label
+        const label = `Ô ${position}: ${foodName}`;
+        ctx.font = 'bold 14px Arial';
+        const textWidth = ctx.measureText(label).width;
+        const textHeight = 20;
+        
+        // Đặt vị trí label
+        let labelX = x1;
+        let labelY = y1 - 10;
+        
+        // Đảm bảo label không vượt ra ngoài canvas
+        if (labelY < 20) {
+            labelY = y1 + 25;
+        }
+        if (labelX + textWidth > ctx.canvas.width) {
+            labelX = ctx.canvas.width - textWidth - 5;
+        }
+        
+        // Vẽ background label
+        ctx.fillStyle = color + 'CC'; // Thêm độ trong suốt
+        ctx.fillRect(labelX - 5, labelY - 15, textWidth + 10, textHeight);
+        
+        // Vẽ text
+        ctx.fillStyle = 'white';
+        ctx.fillText(label, labelX, labelY);
+        
+        // Vẽ số thứ tự ở góc
+        ctx.fillStyle = color;
+        ctx.fillRect(x1, y1, 25, 25);
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(position.toString(), x1 + 12.5, y1 + 12.5);
+    }
+
+    function displaySegments(data) {
+        const segmentsGrid = document.getElementById('segmentsGrid');
+        segmentsGrid.innerHTML = '';
+        
+        if (data.segments && data.segments.length > 0) {
+            data.segments.forEach((segment, index) => {
+                const segmentCard = document.createElement('div');
+                segmentCard.className = 'segment-card';
+                segmentCard.style.background = 'var(--white)';
+                segmentCard.style.borderRadius = '10px';
+                segmentCard.style.overflow = 'hidden';
+                segmentCard.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                segmentCard.style.transition = 'all 0.3s';
+                
+                segmentCard.innerHTML = `
+                    <div style="position: relative;">
+                        <img src="${segment.image}" alt="Segment ${index + 1}" 
+                             style="width: 100%; height: 120px; object-fit: cover; background: #f5f5f5;">
+                        <div style="position: absolute; top: 5px; left: 5px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">
+                            Ô ${index + 1}
+                        </div>
+                    </div>
+                    <div style="padding: 10px; text-align: center;">
+                        <div style="font-weight: 600; color: var(--text-dark); font-size: 0.9em; margin-bottom: 5px;">
+                            ${segment.prediction.name}
+                        </div>
+                        <div style="font-size: 0.8em; color: ${segment.prediction.confidence > 0.5 ? '#28a745' : '#dc3545'};">
+                            ${(segment.prediction.confidence * 100).toFixed(1)}% tin cậy
+                        </div>
+                    </div>
+                `;
+                
+                segmentsGrid.appendChild(segmentCard);
+            });
+        }
+    }
+
+    function displayNutritionAnalysis(totalCalories, foods) {
+      const analysisDiv = document.getElementById('nutritionAnalysis');
+      
+      const dailyRecommended = 2000;
+      const mealRecommended = dailyRecommended / 3;
+      const percentage = ((totalCalories / mealRecommended) * 100).toFixed(1);
+      
+      // Sửa lỗi ở đây - thay thế var() bằng giá trị trực tiếp
+      let status, statusColor, statusIcon, statusBg, advice;
+      if (totalCalories < 400) {
+        status = 'Thiếu calo';
+        statusColor = '#FFC107'; // var(--warning)
+        statusIcon = '⚠️';
+        statusBg = '#fff8e1';
+        advice = 'Bữa ăn của bạn khá nhẹ. Hãy bổ sung thêm protein hoặc carbohydrate để đủ năng lượng.';
+      } else if (totalCalories >= 400 && totalCalories <= 800) {
+        status = 'Cân đối tốt';
+        statusColor = '#4CAF50'; // var(--success)
+        statusIcon = '✅';
+        statusBg = '#e8f5e9';
+        advice = 'Bữa ăn cân đối! Bạn đang cung cấp đủ năng lượng cho cơ thể mà không quá nhiều.';
+      } else if (totalCalories > 800 && totalCalories <= 1000) {
+        status = 'Hơi nhiều calo';
+        statusColor = '#ff9800';
+        statusIcon = '⚡';
+        statusBg = '#fff3e0';
+        advice = 'Bữa ăn hơi nhiều calo. Nếu không vận động nhiều, hãy giảm lượng ăn hoặc tăng rau xanh.';
+      } else {
+        status = 'Quá nhiều calo';
+        statusColor = '#F44336'; // var(--error)
+        statusIcon = '❌';
+        statusBg = '#ffebee';
+        advice = 'Bữa ăn có quá nhiều calo! Hãy cân nhắc giảm các món nhiều dầu mỡ và tăng rau xanh.';
+      }
+      
+      let hasRice = false, hasVegetables = false, hasProtein = false, hasSoup = false;
+      
+      foods.forEach(food => {
+        const name = food.name.toLowerCase();
+        if (name.includes('cơm')) hasRice = true;
+        if (name.includes('rau') || name.includes('canh')) {
+          if (name.includes('canh')) hasSoup = true;
+          else hasVegetables = true;
+        }
+        if (name.includes('thịt') || name.includes('cá') || name.includes('sườn') || 
+          name.includes('trứng') || name.includes('đậu')) {
+          hasProtein = true;
+        }
+      });
+      
+      const balanceItems = [];
+      if (hasRice) balanceItems.push({ icon: '🍚', text: 'Carbohydrate', color: '#2196F3' });
+      if (hasProtein) balanceItems.push({ icon: '🥩', text: 'Protein', color: '#F44336' });
+      if (hasVegetables) balanceItems.push({ icon: '🥬', text: 'Rau xanh', color: '#4CAF50' });
+      if (hasSoup) balanceItems.push({ icon: '🍲', text: 'Canh/Súp', color: '#FF9800' });
+      
+      const missingItems = [];
+      if (!hasRice) missingItems.push('🍚 Cơm/Carbohydrate');
+      if (!hasProtein) missingItems.push('🥩 Protein');
+      if (!hasVegetables) missingItems.push('🥬 Rau xanh');
+      if (!hasSoup) missingItems.push('🍲 Canh/Nước');
+      
+      analysisDiv.innerHTML = `
+        <h3 style="margin-bottom: 15px; color: var(--text-dark);">📊 Phân tích dinh dưỡng</h3>
+        
+        <div style="background: ${statusBg}; padding: 15px; border-radius: 10px; border-left: 4px solid ${statusColor}; margin-bottom: 15px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <span style="font-size: 1.5em;">${statusIcon}</span>
+            <div>
+              <div style="font-weight: 600; font-size: 1.1em; color: ${statusColor};">${status}</div>
+              <div style="font-size: 0.9em; color: var(--text-light);">${totalCalories} cal / ${mealRecommended.toFixed(0)} cal khuyến nghị</div>
+            </div>
+          </div>
+          <div style="background: var(--white); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 10px;">
+            <div style="height: 100%; background: ${statusColor}; width: ${Math.min(percentage, 100)}%; transition: width 0.5s;"></div>
+          </div>
+          <div style="font-size: 0.9em; color: var(--text-dark);">${advice}</div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <div style="font-weight: 600; margin-bottom: 10px; color: var(--text-dark);">✅ Thành phần có trong bữa ăn:</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            ${balanceItems.map(item => `
+              <div style="background: ${item.color}20; padding: 8px 15px; border-radius: 20px; border: 2px solid ${item.color}; display: flex; align-items: center; gap: 5px;">
+                <span>${item.icon}</span>
+                <span style="font-weight: 600; color: ${item.color};">${item.text}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        ${missingItems.length > 0 ? `
+        <div style="margin-bottom: 15px;">
+          <div style="font-weight: 600; margin-bottom: 10px; color: #ff9800;">⚠️ Nên bổ sung:</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            ${missingItems.map(item => `
+              <div style="background: #fff3e0; padding: 8px 15px; border-radius: 20px; border: 2px dashed #ff9800; color: #ff9800; font-weight: 600;">
+                ${item}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : '<div style="color: #4CAF50; font-weight: 600; padding: 10px; background: #e8f5e9; border-radius: 8px;">🎉 Bữa ăn đầy đủ dưỡng chất!</div>'}
+        
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; border-left: 4px solid #2196F3;">
+          <div style="font-weight: 600; margin-bottom: 8px; color: #1976d2;">💡 Mẹo sức khỏe:</div>
+          <ul style="margin: 0; padding-left: 20px; color: var(--text-dark);">
+            <li>Nên ăn nhiều rau xanh (ít nhất 1/2 khay)</li>
+            <li>Uống đủ nước (2 lít/ngày)</li>
+            <li>Hạn chế đồ chiên rán, thức ăn nhiều dầu mỡ</li>
+            <li>Ăn chậm và nhai kỹ để tiêu hóa tốt hơn</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    async function loadUserPoints() {
+      try {
+        const response = await fetch(`${API_URL}/user/${currentUser.id}/points`);
+        const data = await response.json();
+        if (data.success) {
+          currentUser.points = data.total_points;
+          document.getElementById('userPoints').textContent = currentUser.points;
+        }
+      } catch (error) {
+        console.error('Error loading points:', error);
+      }
+    }
+   
+    function loadMenu() {
+      const grid = document.getElementById('menuGrid');
+      grid.innerHTML = '';
+      
+      Object.entries(MENU_DATA).forEach(([name, info]) => {
+        const card = document.createElement('div');
+        card.className = 'menu-card';
+        card.innerHTML = `
+          <div class="menu-card-img">
+            <img src="${info.image}" alt="${name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2216%22%3E${name}%3C/text%3E%3C/svg%3E'">
+          </div>
+          <div class="menu-card-body">
+            <div class="menu-card-title">${name}</div>
+            <div class="menu-card-info">
+              <span class="menu-price">${info.price.toLocaleString()}đ</span>
+              <span>🔥 ${info.calories} cal</span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function loadRewards() {
+      const grid = document.getElementById('rewardsGrid');
+      grid.innerHTML = '';
+      
+      Object.entries(REWARDS_DATA).forEach(([id, reward]) => {
+        const card = document.createElement('div');
+        card.className = 'reward-card';
+        const canRedeem = currentUser.points >= reward.points;
+        card.innerHTML = `
+          <div class="reward-icon">
+            <img src="${reward.image}" alt="${reward.name}" onerror="this.parentElement.innerHTML='🎁'">
+          </div>
+          <div class="reward-title">${reward.name}</div>
+          <div class="reward-points">${reward.points} điểm</div>
+          <button class="btn-redeem" onclick="redeemReward(${id}, ${reward.points})" ${!canRedeem ? 'disabled' : ''}>
+            ${canRedeem ? '🎁 Đổi ngay' : '🔒 Chưa đủ điểm'}
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function redeemReward(rewardId, points) {
+      if (!currentUser) {
+        alert('⚠️ Vui lòng đăng nhập trước!');
+        return;
+      }
+      if (currentUser.points < points) {
+        alert('❌ Bạn không đủ điểm để đổi quà này!');
+        return;
+      }
+      if (!confirm(`🎁 Bạn muốn đổi quà này với ${points} điểm?`)) return;
+      try {
+        const response = await fetch(`${API_URL}/redeem`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: currentUser.id,
+            points: points
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert('🎉 ' + data.message);
+          currentUser.points = data.remaining_points;
+          document.getElementById('userPoints').textContent = currentUser.points;
+          loadRewards();
+        } else {
+          alert('❌ Lỗi: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Không thể kết nối đến server');
+      }
+    }
+
+    async function loadHistory() {
+      const list = document.getElementById('historyList');
+      list.innerHTML = '<div class="loading">Đang tải...</div>';
+      
+      try {
+        const response = await fetch(`${API_URL}/user/${currentUser.id}/history`);
+        const data = await response.json();
+        
+        list.innerHTML = '';
+        if (data.history && data.history.length > 0) {
+          data.history.reverse().forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            const date = new Date(item.timestamp).toLocaleString('vi-VN');
+            historyItem.innerHTML = `
+              <div class="history-date">📅 ${date}</div>
+              <div style="font-weight: 600; margin-bottom: 10px;">🍽️ ${item.foods.length} món ăn</div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>💰 Tổng tiền: <strong>${item.total_price.toLocaleString()}đ</strong></span>
+                <span style="color: var(--accent); font-weight: 600;">⭐ +${item.points_earned} điểm</span>
+              </div>
+            `;
+            list.appendChild(historyItem);
+          });
+        } else {
+          list.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light);">Chưa có lịch sử</div>';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        list.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light);">Không thể tải lịch sử</div>';
+      }
+    }
+
+    // Image adjustment functions
+    let currentBrightness = 0;
+    let currentContrast = 0;
+
+    function adjustBrightness(value) {
+        currentBrightness = parseInt(value);
+        document.getElementById('brightnessValue').textContent = value;
+        previewAdjustments();
+    }
+
+    function adjustContrast(value) {
+        currentContrast = parseInt(value);
+        document.getElementById('contrastValue').textContent = value;
+        previewAdjustments();
+    }
+
+    function previewAdjustments() {
+        if (!currentImage) return;
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.filter = `brightness(${100 + currentBrightness}%) contrast(${100 + currentContrast}%)`;
+            ctx.drawImage(img, 0, 0);
+            document.getElementById('preview').src = canvas.toDataURL('image/jpeg');
+        };
+        img.src = currentImage;
+    }
+
+    function applyAdjustments() {
+        if (!currentImage) return;
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.filter = `brightness(${100 + currentBrightness}%) contrast(${100 + currentContrast}%)`;
+            ctx.drawImage(img, 0, 0);
+            currentImage = canvas.toDataURL('image/jpeg');
+            document.getElementById('preview').src = currentImage;
+            alert('✅ Đã áp dụng chỉnh sửa!');
+        };
+        img.src = currentImage;
+    }
+
+    function resetAdjustments() {
+        currentBrightness = 0;
+        currentContrast = 0;
+        document.getElementById('brightnessSlider').value = 0;
+        document.getElementById('contrastSlider').value = 0;
+        document.getElementById('brightnessValue').textContent = '0';
+        document.getElementById('contrastValue').textContent = '0';
+        
+        if (currentImage) {
+            document.getElementById('preview').src = currentImage;
+        }
+        alert('🔄 Đã reset về ảnh gốc!');
+    }
+
+    function showOriginalImage() {
+        if (!currentImage) return;
+        
+        const originalImg = new Image();
+        originalImg.onload = function() {
+            const preview = document.getElementById('preview');
+            preview.src = currentImage;
+            setTimeout(() => {
+                if (currentBrightness !== 0 || currentContrast !== 0) {
+                    previewAdjustments();
+                }
+            }, 3000);
+        };
+        originalImg.src = currentImage;
+    }
+  </script>
+</body>
+</html>
