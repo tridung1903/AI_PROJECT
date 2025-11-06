@@ -1,0 +1,86 @@
+import cv2
+import matplotlib.pyplot as plt
+from tkinter import Tk, filedialog, messagebox
+import os
+
+def chon_anh():
+    """Mở hộp thoại chọn ảnh"""
+    root = Tk()
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        title="Chọn ảnh khay cơm",
+        filetypes=[("Image files", "*.jpg;*.jpeg;*.png")]
+    )
+    root.destroy()
+    return file_path
+
+def tao_thu_muc_khong_trung(duong_dan):
+    """Tạo thư mục mới nếu đã tồn tại, ví dụ crops -> crops_1, crops_2..."""
+    base = duong_dan
+    i = 1
+    while os.path.exists(duong_dan):
+        duong_dan = f"{base}_{i}"
+        i += 1
+    os.makedirs(duong_dan)
+    return duong_dan
+
+# --- Chọn ảnh ---
+img_path = chon_anh()
+if not img_path:
+    print("❌ Không có ảnh nào được chọn.")
+    exit()
+
+# --- Đọc ảnh ---
+img = cv2.imread("z7107917728915_f52535c527e6ba94595045969fc62272.jpg")
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+h, w, _ = img.shape
+print(f"Kích thước ảnh: {w} x {h}")
+
+# --- CẮT ẢNH 3 TRÊN - 2 DƯỚI ---
+crops = {
+    "O1": img[int(0.05*h):int(0.35*h), int(0.00*w):int(0.32*w)],
+    "O2": img[int(0.05*h):int(0.35*h), int(0.33*w):int(0.65*w)],
+    "O3": img[int(0.05*h):int(0.35*h), int(0.66*w):int(0.98*w)],
+    "O4": img[int(0.40*h):int(0.95*h), int(0.00*w):int(0.38*w)],
+    "O5": img[int(0.40*h):int(0.95*h), int(0.50*w):int(0.98*w)],
+}
+
+# --- TẠO THƯ MỤC LƯU ---
+base_dir = os.path.join(os.path.dirname(img_path), "crops")
+file_name = os.path.splitext(os.path.basename(img_path))[0]
+output_dir = os.path.join(base_dir, file_name)
+
+# Nếu thư mục đã tồn tại → hỏi người dùng
+if os.path.exists(output_dir):
+    root = Tk()
+    root.withdraw()
+    ans = messagebox.askyesno("Thư mục đã tồn tại",
+        f"Thư mục '{output_dir}' đã tồn tại.\nBạn có muốn ghi đè lên không?")
+    root.destroy()
+    if not ans:
+        output_dir = tao_thu_muc_khong_trung(output_dir)
+else:
+    os.makedirs(output_dir)
+
+# --- LƯU ẢNH ---
+for name, crop in crops.items():
+    save_path = os.path.join(output_dir, f"{name}.jpg")
+    cv2.imwrite(save_path, cv2.cvtColor(crop, cv2.COLOR_RGB2BGR))
+    print(f"✅ Đã lưu: {save_path}")
+
+# --- HIỂN THỊ ---
+fig, axes = plt.subplots(2, 3, figsize=(13, 9))
+fig.suptitle("Kết quả cắt ảnh khay cơm", fontsize=16)
+
+axes[0, 0].imshow(img)
+axes[0, 0].set_title("Ảnh gốc")
+axes[0, 0].axis("off")
+
+for idx, (name, img_crop) in enumerate(crops.items(), start=1):
+    i, j = divmod(idx, 3)
+    axes[i, j].imshow(img_crop)
+    axes[i, j].set_title(name)
+    axes[i, j].axis("off")
+
+plt.tight_layout()
+plt.show()
